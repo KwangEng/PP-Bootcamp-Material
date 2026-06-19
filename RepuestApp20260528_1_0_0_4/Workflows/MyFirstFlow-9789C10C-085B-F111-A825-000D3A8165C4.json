@@ -1,0 +1,96 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_excelonlinebusiness": {
+        "runtimeSource": "invoker",
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedexcelonlinebusiness_ee20c"
+        },
+        "api": {
+          "name": "shared_excelonlinebusiness"
+        }
+      },
+      "shared_office365users": {
+        "runtimeSource": "invoker",
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedoffice365users_77777"
+        },
+        "api": {
+          "name": "shared_office365users"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "undefined",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "Button",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          }
+        }
+      },
+      "actions": {
+        "Add_a_row_into_a_table": {
+          "runAfter": {
+            "Get_my_profile_(V2)": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "01C54DLEUGUXWRW2SR4ZE26EFYGTIQV4AH": "/MyFirstExcel.xlsx",
+            "01C54DLEQAVCDYYHKLTBDJ3JT3UMDULVZJ": "/MyFirstExcel1.xlsx",
+            "tableId": "{383C127E-718B-4F40-A366-A815FD16EED2}"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "source": "me",
+              "drive": "b!zQe6ByBbLESLSXs2U7BM5MSsqnoWDaJLlO80Hld3SRNF7729Ou9ERbfYUH_-PqZ2",
+              "file": "01C54DLEQAVCDYYHKLTBDJ3JT3UMDULVZJ",
+              "table": "{383C127E-718B-4F40-A366-A815FD16EED2}",
+              "item/Date": "@formatDateTime(utcNow(),'d-M-yyyy')",
+              "item/Display Name": "@outputs('Get_my_profile_(V2)')?['body/displayName']",
+              "item/Mail": "@outputs('Get_my_profile_(V2)')?['body/mail']",
+              "item/Comments": "Submit using Office 365 connector"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_excelonlinebusiness",
+              "operationId": "AddRowV2",
+              "connectionName": "shared_excelonlinebusiness"
+            }
+          }
+        },
+        "Get_my_profile_(V2)": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365users",
+              "operationId": "MyProfile_V2",
+              "connectionName": "shared_office365users"
+            }
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

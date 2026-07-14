@@ -1,0 +1,99 @@
+PA-Army-3Sir
+https://6da6622b0340e1e79d8ea705133d90.9d.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/12/workflows/80ed308969c449e3a65936ad7ab04e86/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=rfxk18eVpOt6poS7YdS55Q4Mlk33Jl6583t8xBodRDE
+
+SA-Army-3Sir
+https://768e44155a76e48e9a1f2261562507.81.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/22/workflows/369bd696bf0f438396c5999b76d92bfe/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=gr8HjqsRFJYtw79VxBKeWnLgOr-5PgQas_ZDsDpsYMc
+
+Developer 
+https://4f69cba6f7f5e64a91c53ec06db1ae.94.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/29/workflows/1069b4f884914bfd81e8883c28622e04/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=BEUMppW2bMLLm7rVdhujfnOMATJkNqAZZ1mdpiJHamU
+
+Integration Assumptions
+Tenko will push every attendance lifecycle event to a configured Teams or Power Platform webhook.
+The webhook URL will be provided by the receiving team and stored in Key Vault.
+The webhook requires no authentication.
+Tenko treats any HTTP 2xx response as accepted.
+The receiving endpoint does not need to return a response body.
+Tenko records every outbound push so failed delivery can be retried.
+The outbound payload includes complete attendance details, including identifying, free-text, medical, course, location, and custom-label fields.
+If the receiver is a classic Teams Incoming Webhook, it can display messages in Teams but cannot directly write Dataverse rows. If the receiving team needs automated Dataverse writes, the endpoint should be a Power Automate flow, Teams Workflow, or Logic App that accepts the payload, writes Dataverse rows, and optionally posts a Teams card.
+
+Trigger: Teams WebHook Incoming
+
+Parse Trigger Body
+{
+  "type": "object",
+  "properties": {
+    "Name": { "type": "string" },
+    "Age": { "type": "integer" },
+    "Role": { "type": "string" }
+  }
+}
+
+Parse Trigger Body
+{
+  "schemaVersion": "1.0",
+  "webhookPushId": "uuid",
+  "attendanceEventId": "uuid",
+  "attendanceRecordId": "uuid",
+  "attendanceVersion": 1,
+  "eventType": "attendance.recorded",
+  "sourceEventType": "created",
+  "operation": "create",
+  "source": "tenko-api",
+  "environment": "dev",
+  "occurredAt": "2026-06-23T08:00:00.000Z",
+  "pushedAt": "2026-06-23T08:00:05.000Z",
+  "attendance": {
+    "attendanceRecordId": "uuid",
+    "attendanceEventId": "uuid",
+    "clientMutationId": "client-mutation-id",
+    "memberId": "uuid",
+    "memberName": "Jane Tan",
+    "officerId": "A12345",
+    "phoneNumber": "+6512345678",
+    "appointment": "officer",
+    "unitId": "uuid",
+    "unitName": "Team A",
+    "unitType": "team",
+    "unitPathSnapshot": ["Division", "Region", "Zone", "Cluster", "Site", "Group", "Team"],
+    "fromDate": "2026-06-23",
+    "toDate": "2026-06-23",
+    "fromHalfDay": "full",
+    "toHalfDay": "full",
+    "reason": "medical",
+    "remarks": "Submitted by supervisor",
+    "medical": {
+      "doctorName": "Dr Example",
+      "clinicName": "Example Clinic"
+    },
+    "course": {
+      "courseName": null,
+      "location": null
+    },
+    "other": {
+      "label": null
+    },
+    "hasConflict": false,
+    "conflictRecordIds": [],
+    "rulesVersion": 1,
+    "version": 1,
+    "isDeleted": false,
+    "createdByUserId": "uuid",
+    "updatedByUserId": "uuid",
+    "createdAt": "2026-06-23T08:00:00.000Z",
+    "updatedAt": "2026-06-23T08:00:00.000Z",
+    "deletedAt": null
+  }
+}
+
+Receive the webhook payload.
+Insert a row into Tenko Attendance Webhook Delivery using webhookPushId.
+Upsert Tenko Attendance Event using attendanceEventId.
+Upsert Tenko Attendance Record using attendanceRecordId.
+If attendance.isDeleted is true, mark the Dataverse attendance record as deleted instead of physically deleting it.
+If attendanceEventId already exists, treat the payload as a duplicate or retry and increment Receive Count.
+Preserve Raw Payload if the Power Platform team needs full replay/debug capability on their side.
+
+
+Terminate for success
+

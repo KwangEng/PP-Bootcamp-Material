@@ -1,0 +1,20 @@
+# SharePoint External Sharing
+Get-SPOTenant | Select SharingCapability
+
+# Power Platform DLP Policies
+Get-AdminDlpPolicy
+
+# Power Platform Environments
+Get-AdminPowerAppEnvironment
+
+# Teams External Access
+Get-CsTenantFederationConfiguration
+
+# Teams Guest Access
+Get-CsTeamsClientConfiguration
+
+# Exchange Transport Rules
+Get-TransportRule
+
+# Exchange Remote Domains
+Get-RemoteDomain

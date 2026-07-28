@@ -1,0 +1,9 @@
+#Installing https://github.com/Microsoft365DSC
+#https://microsoft365dsc.com/
+Install-Module Microsoft365DSC -Force
+
+#All Tenants
+Export-M365DSCConfiguration -Path C:\M365DSC -GlobalAdminAccount admin@contoso.com
+
+#Selected Loads
+Export-M365DSCConfiguration -Components @("AAD*","EXO*","SPO*","Teams*") -Path C:\M365DSC

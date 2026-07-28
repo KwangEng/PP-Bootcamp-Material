@@ -1,0 +1,255 @@
+<#
+.SYNOPSIS
+Microsoft 365 Tenant Configuration Export
+
+.DESCRIPTION
+Exports:
+- Entra ID
+- Microsoft 365 Tenant
+- Exchange Online
+- SharePoint Online
+- Teams
+- Power Platform
+
+OUTPUT
+.\M365-Tenant-Export-YYYYMMDD-HHMMSS
+    \JSON
+    \CSV
+#>
+
+#========================================================================
+# VARIABLES
+#========================================================================
+
+$TenantAdminUrl = "https://YOURTENANT-admin.sharepoint.com"
+
+$Timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+$ExportRoot = ".\M365-Tenant-Export-$Timestamp"
+
+$JsonPath = "$ExportRoot\JSON"
+$CsvPath  = "$ExportRoot\CSV"
+
+New-Item -ItemType Directory -Force -Path $JsonPath | Out-Null
+New-Item -ItemType Directory -Force -Path $CsvPath | Out-Null
+
+#========================================================================
+# MODULE CHECK
+#========================================================================
+
+$Modules = @(
+    "Microsoft.Graph",
+    "ExchangeOnlineManagement",
+    "Microsoft.Online.SharePoint.PowerShell",
+    "MicrosoftTeams",
+    "Microsoft.PowerApps.Administration.PowerShell"
+)
+
+foreach ($Module in $Modules)
+{
+    if (!(Get-Module -ListAvailable -Name $Module))
+    {
+        Install-Module $Module -Scope CurrentUser -Force
+    }
+}
+
+#========================================================================
+# CONNECT SERVICES
+#========================================================================
+
+Write-Host "Connecting to Microsoft Graph..."
+Connect-MgGraph `
+    -Scopes `
+    "Organization.Read.All",
+    "Directory.Read.All",
+    "Policy.Read.All",
+    "Domain.Read.All"
+
+Write-Host "Connecting to Exchange Online..."
+Connect-ExchangeOnline
+
+Write-Host "Connecting to Teams..."
+Connect-MicrosoftTeams
+
+Write-Host "Connecting to SharePoint Online..."
+Connect-SPOService -Url $TenantAdminUrl
+
+Write-Host "Connecting to Power Platform..."
+Add-PowerAppsAccount
+
+#========================================================================
+# ENTRA ID
+#========================================================================
+
+Write-Host "Exporting Entra ID..."
+
+$Org = Get-MgOrganization
+$Domains = Get-MgDomain
+$Licenses = Get-MgSubscribedSku
+
+$Org | ConvertTo-Json -Depth 20 |
+    Out-File "$JsonPath\Entra-Organization.json"
+
+$Domains | ConvertTo-Json -Depth 20 |
+    Out-File "$JsonPath\Entra-Domains.json"
+
+$Licenses | ConvertTo-Json -Depth 20 |
+    Out-File "$JsonPath\Entra-Licenses.json"
+
+$Domains |
+    Export-Csv "$CsvPath\Domains.csv" -NoTypeInformation
+
+$Licenses |
+    Select SkuPartNumber, ConsumedUnits |
+    Export-Csv "$CsvPath\Licenses.csv" -NoTypeInformation
+
+#========================================================================
+# SHAREPOINT ONLINE
+#========================================================================
+
+Write-Host "Exporting SharePoint Online..."
+
+$SPOTenant = Get-SPOTenant
+
+$SPOTenant |
+    ConvertTo-Json -Depth 20 |
+    Out-File "$JsonPath\SPO-Tenant.json"
+
+$SPOTenant |
+    Export-Csv "$CsvPath\SPO-Tenant.csv" -NoTypeInformation
+
+#========================================================================
+# EXCHANGE ONLINE
+#========================================================================
+
+Write-Host "Exporting Exchange Online..."
+
+$OrgConfig = Get-OrganizationConfig
+$AcceptedDomains = Get-AcceptedDomain
+$MailboxPlans = Get-MailboxPlan
+
+$OrgConfig |
+    ConvertTo-Json -Depth 20 |
+    Out-File "$JsonPath\EXO-OrganizationConfig.json"
+
+$AcceptedDomains |
+    ConvertTo-Json -Depth 20 |
+    Out-File "$JsonPath\EXO-AcceptedDomains.json"
+
+$MailboxPlans |
+    ConvertTo-Json -Depth 20 |
+    Out-File "$JsonPath\EXO-MailboxPlans.json"
+
+$AcceptedDomains |
+    Export-Csv "$CsvPath\EXO-AcceptedDomains.csv" -NoTypeInformation
+
+#========================================================================
+# TEAMS
+#========================================================================
+
+Write-Host "Exporting Teams..."
+
+$MeetingPolicy = Get-CsTeamsMeetingPolicy
+$MessagingPolicy = Get-CsTeamsMessagingPolicy
+$CallingPolicy = Get-CsTeamsCallingPolicy
+
+$MeetingPolicy |
+    ConvertTo-Json -Depth 20 |
+    Out-File "$JsonPath\Teams-MeetingPolicy.json"
+
+$MessagingPolicy |
+    ConvertTo-Json -Depth 20 |
+    Out-File "$JsonPath\Teams-MessagingPolicy.json"
+
+$CallingPolicy |
+    ConvertTo-Json -Depth 20 |
+    Out-File "$JsonPath\Teams-CallingPolicy.json"
+
+$MeetingPolicy |
+    Export-Csv "$CsvPath\Teams-MeetingPolicy.csv" -NoTypeInformation
+
+#========================================================================
+# POWER PLATFORM
+#========================================================================
+
+Write-Host "Exporting Power Platform..."
+
+$TenantSettings = Get-TenantSettings
+
+$TenantSettings |
+    ConvertTo-Json -Depth 50 |
+    Out-File "$JsonPath\PowerPlatform-TenantSettings.json"
+
+$TenantSettings.PSObject.Properties |
+    Select Name, Value |
+    Export-Csv "$CsvPath\PowerPlatform-TenantSettings.csv" -NoTypeInformation
+
+#========================================================================
+# CONDITIONAL ACCESS (OPTIONAL)
+#========================================================================
+
+try
+{
+    Write-Host "Exporting Conditional Access..."
+
+    $CAPolicies = Get-MgIdentityConditionalAccessPolicy
+
+    $CAPolicies |
+        ConvertTo-Json -Depth 50 |
+        Out-File "$JsonPath\ConditionalAccessPolicies.json"
+
+    $CAPolicies |
+        Select DisplayName, State |
+        Export-Csv "$CsvPath\ConditionalAccessPolicies.csv" -NoTypeInformation
+}
+catch
+{
+    Write-Warning "Conditional Access export skipped."
+}
+
+#========================================================================
+# AUTHENTICATION METHODS POLICY
+#========================================================================
+
+try
+{
+    $AuthMethods = Get-MgPolicyAuthenticationMethodPolicy
+
+    $AuthMethods |
+        ConvertTo-Json -Depth 20 |
+        Out-File "$JsonPath\AuthMethodPolicy.json"
+}
+catch
+{
+    Write-Warning "Authentication Method Policy export skipped."
+}
+
+#========================================================================
+# SUMMARY REPORT
+#========================================================================
+
+$Report = @"
+Microsoft 365 Tenant Export
+
+Date: $(Get-Date)
+
+Files exported:
+- Entra ID
+- Domains
+- Licenses
+- Exchange Online
+- SharePoint Online
+- Teams
+- Power Platform
+- Conditional Access
+- Authentication Methods
+
+Location:
+$ExportRoot
+"@
+
+$Report | Out-File "$ExportRoot\README.txt"
+
+Write-Host ""
+Write-Host "Export Complete"
+Write-Host "Output Folder:"
+Write-Host $ExportRoot -ForegroundColor Green

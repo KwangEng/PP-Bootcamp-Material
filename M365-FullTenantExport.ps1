@@ -282,10 +282,11 @@ try {
 $exoFolder = $Folders['ExchangeOnline']
 $exoCmds = @(
     'Get-OrganizationConfig','Get-AcceptedDomain','Get-RemoteDomain','Get-MailboxPlan','Get-RoleAssignmentPolicy','Get-ManagementRoleAssignment',
-    'Get-TransportConfig','Get-TransportRule','Get-HostedOutboundSpamFilterPolicy','Get-InboundConnector','Get-OutboundConnector',
+    'Get-TransportConfig','Get-TransportRule','Get-HostedOutboundSpamFilterPolicy','Get-InboundConnector','Get-OutboundConnector -IncludeTestModeConnectors $true',
     'Get-OrganizationRelationship','Get-SharingPolicy','Get-OwaMailboxPolicy','Get-MobileDeviceMailboxPolicy','Get-ActiveSyncOrganizationSettings',
     'Get-AddressBookPolicy','Get-AddressList','Get-GlobalAddressList','Get-EmailAddressPolicy','Get-DistributionGroup',
-    'Get-UnifiedGroup','Get-CASMailboxPlan' 
+    #'Get-UnifiedGroup',
+    'Get-CASMailboxPlan' 
     #,'Get-MailboxAutoReplyConfiguration'
 )
 foreach ($cmd in $exoCmds) {
@@ -297,7 +298,8 @@ $defFolder = $Folders['DefenderOffice365']
 $defCmds = @(
     'Get-AntiPhishPolicy','Get-AntiPhishRule','Get-MalwareFilterPolicy','Get-MalwareFilterRule','Get-HostedContentFilterPolicy','Get-HostedContentFilterRule',
     'Get-SafeAttachmentPolicy','Get-SafeAttachmentRule','Get-SafeLinksPolicy','Get-SafeLinksRule','Get-AtpPolicyForO365','Get-QuarantinePolicy',
-    'Get-TenantAllowBlockListItems','Get-EmailTenantSettings','Get-ReportSubmissionPolicy','Get-ExternalInOutlook'
+    #'Get-TenantAllowBlockListItems',
+    'Get-EmailTenantSettings','Get-ReportSubmissionPolicy','Get-ExternalInOutlook'
 )
 foreach ($cmd in $defCmds) {
     Invoke-IfCmdletExists $cmd 'DefenderOffice365' $cmd $defFolder ([scriptblock]::Create("$cmd | Select-Object *"))

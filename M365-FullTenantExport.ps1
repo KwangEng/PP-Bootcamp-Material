@@ -257,9 +257,9 @@ Invoke-IfCmdletExists Get-MgPolicyIdentitySecurityDefaultEnforcementPolicy 'Entr
 Invoke-IfCmdletExists Get-MgDirectoryAdministrativeUnit 'EntraID' 'AdministrativeUnits' $Folders['EntraID'] { Get-MgDirectoryAdministrativeUnit -All }
 Invoke-IfCmdletExists Get-MgServicePrincipal 'EntraID' 'ServicePrincipals' $Folders['EntraID'] { Get-MgServicePrincipal -All -Property Id,AppId,DisplayName,AccountEnabled,AppOwnerOrganizationId,PublisherName,SignInAudience,ServicePrincipalType,Tags,CreatedDateTime }
 Invoke-IfCmdletExists Get-MgApplication 'EntraID' 'Applications' $Folders['EntraID'] { Get-MgApplication -All -Property Id,AppId,DisplayName,SignInAudience,PublisherDomain,CreatedDateTime,RequiredResourceAccess,Web,Spa,PublicClient,Api }
-Invoke-IfCmdletExists Get-MgGroup 'EntraID' 'Groups' $Folders['EntraID'] { Get-MgGroup -All -Property Id,DisplayName,Mail,MailEnabled,SecurityEnabled,GroupTypes,Visibility,CreatedDateTime }
-Invoke-IfCmdletExists Get-MgUser 'EntraID' 'Users_BasicInventory' $Folders['EntraID'] { Get-MgUser -All -Property Id,DisplayName,UserPrincipalName,AccountEnabled,UserType,CreatedDateTime,Department,JobTitle,OnPremisesSyncEnabled }
-Invoke-IfCmdletExists Get-MgDevice 'EntraID' 'Devices' $Folders['EntraID'] { Get-MgDevice -All -Property Id,DisplayName,AccountEnabled,OperatingSystem,OperatingSystemVersion,TrustType,ApproximateLastSignInDateTime,IsCompliant,IsManaged }
+#Invoke-IfCmdletExists Get-MgGroup 'EntraID' 'Groups' $Folders['EntraID'] { Get-MgGroup -All -Property Id,DisplayName,Mail,MailEnabled,SecurityEnabled,GroupTypes,Visibility,CreatedDateTime }
+#Invoke-IfCmdletExists Get-MgUser 'EntraID' 'Users_BasicInventory' $Folders['EntraID'] { Get-MgUser -All -Property Id,DisplayName,UserPrincipalName,AccountEnabled,UserType,CreatedDateTime,Department,JobTitle,OnPremisesSyncEnabled }
+#Invoke-IfCmdletExists Get-MgDevice 'EntraID' 'Devices' $Folders['EntraID'] { Get-MgDevice -All -Property Id,DisplayName,AccountEnabled,OperatingSystem,OperatingSystemVersion,TrustType,ApproximateLastSignInDateTime,IsCompliant,IsManaged }
 
 # Additional Entra / Graph REST exports
 if (Get-Command Invoke-MgGraphRequest -ErrorAction SilentlyContinue) {
@@ -285,7 +285,8 @@ $exoCmds = @(
     'Get-TransportConfig','Get-TransportRule','Get-HostedOutboundSpamFilterPolicy','Get-InboundConnector','Get-OutboundConnector',
     'Get-OrganizationRelationship','Get-SharingPolicy','Get-OwaMailboxPolicy','Get-MobileDeviceMailboxPolicy','Get-ActiveSyncOrganizationSettings',
     'Get-AddressBookPolicy','Get-AddressList','Get-GlobalAddressList','Get-EmailAddressPolicy','Get-DistributionGroup',
-    'Get-UnifiedGroup','Get-CASMailboxPlan','Get-MailboxAutoReplyConfiguration'
+    'Get-UnifiedGroup','Get-CASMailboxPlan' 
+    #,'Get-MailboxAutoReplyConfiguration'
 )
 foreach ($cmd in $exoCmds) {
     Invoke-IfCmdletExists $cmd 'ExchangeOnline' $cmd $exoFolder ([scriptblock]::Create("$cmd | Select-Object *"))
@@ -332,7 +333,7 @@ if ($SPOAdminUrl) {
     Invoke-IfCmdletExists Get-SPODeletedSite 'SharePointOnline' 'DeletedSites' $spoFolder { Get-SPODeletedSite -Limit All }
     Invoke-IfCmdletExists Get-SPOTenantCdnEnabled 'SharePointOnline' 'TenantCdnPublicEnabled' $spoFolder { [pscustomobject]@{ PublicCdnEnabled = Get-SPOTenantCdnEnabled -CdnType Public } }
     Invoke-IfCmdletExists Get-SPOTenantCdnEnabled 'SharePointOnline' 'TenantCdnPrivateEnabled' $spoFolder { [pscustomobject]@{ PrivateCdnEnabled = Get-SPOTenantCdnEnabled -CdnType Private } }
-    Invoke-IfCmdletExists Get-SPOAppErrors 'SharePointOnline' 'AppErrors' $spoFolder { Get-SPOAppErrors }
+    #Invoke-IfCmdletExists Get-SPOAppErrors 'SharePointOnline' 'AppErrors' $spoFolder { Get-SPOAppErrors }
     Invoke-IfCmdletExists Get-SPOOrgAssetsLibrary 'SharePointOnline' 'OrgAssetsLibraries' $spoFolder { Get-SPOOrgAssetsLibrary }
 } else {
     Write-Status 'SPOAdminUrl not provided. SharePoint Online export skipped.' 'WARN'
@@ -351,7 +352,8 @@ $teamsCmds = @(
     'Get-CsTeamsAppPermissionPolicy','Get-CsTeamsAppSetupPolicy','Get-CsTeamsChannelsPolicy','Get-CsTeamsFilesPolicy',
     'Get-CsTeamsGuestMessagingConfiguration','Get-CsTeamsGuestMeetingConfiguration','Get-CsTeamsGuestCallingConfiguration',
     'Get-CsTenantFederationConfiguration','Get-CsTenantMigrationConfiguration','Get-CsExternalAccessPolicy','Get-CsTeamsUpgradePolicy',
-    'Get-Team','Get-TeamChannel','Get-TeamsApp'
+    #'Get-Team','Get-TeamChannel',
+    'Get-TeamsApp'
 )
 foreach ($cmd in $teamsCmds) {
     if ($cmd -eq 'Get-TeamChannel') {

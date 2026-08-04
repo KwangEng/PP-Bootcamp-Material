@@ -1,5 +1,0 @@
-#PA-Army-3SIR
-https://6da6622b0340e1e79d8ea705133d90.9d.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/12/workflows/80ed308969c449e3a65936ad7ab04e86/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=rfxk18eVpOt6poS7YdS55Q4Mlk33Jl6583t8xBodRDE
-
-#SA-Army-3Sir
-https://768e44155a76e48e9a1f2261562507.81.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/22/workflows/369bd696bf0f438396c5999b76d92bfe/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=gr8HjqsRFJYtw79VxBKeWnLgOr-5PgQas_ZDsDpsYMc

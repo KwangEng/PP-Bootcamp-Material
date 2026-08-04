@@ -298,7 +298,7 @@ $defFolder = $Folders['DefenderOffice365']
 $defCmds = @(
     'Get-AntiPhishPolicy','Get-AntiPhishRule','Get-MalwareFilterPolicy','Get-MalwareFilterRule','Get-HostedContentFilterPolicy','Get-HostedContentFilterRule',
     'Get-SafeAttachmentPolicy','Get-SafeAttachmentRule','Get-SafeLinksPolicy','Get-SafeLinksRule','Get-AtpPolicyForO365','Get-QuarantinePolicy',
-    #'Get-TenantAllowBlockListItems',
+    'Get-TenantAllowBlockListItems -ListType Url',
     'Get-EmailTenantSettings','Get-ReportSubmissionPolicy','Get-ExternalInOutlook'
 )
 foreach ($cmd in $defCmds) {
